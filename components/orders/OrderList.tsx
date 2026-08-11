@@ -1,4 +1,6 @@
 import { StatusBadge } from "@/components/orders/StatusBadge";
+import Link from "next/link";
+import { DeleteOrderButton } from "@/components/orders/DeleteOrderButton";
 
 const currencyFormatter = new Intl.NumberFormat("ru-RU", {
   style: "currency",
@@ -23,13 +25,17 @@ type OrderListItem = {
 
 type OrderListProps = {
   orders: OrderListItem[];
+  deleteAction: (formData: FormData) => void | Promise<void>;
 };
 
 function formatDate(isoDate: string) {
   return dateFormatter.format(new Date(isoDate));
 }
 
-export function OrderList({ orders }: OrderListProps) {
+export function OrderList({
+  orders,
+  deleteAction,
+}: OrderListProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="overflow-x-auto">
@@ -51,7 +57,10 @@ export function OrderList({ orders }: OrderListProps) {
               <th className="px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">
                 Дедлайн
               </th>
-            </tr>
+              <th className="px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">
+                Действия
+              </th>
+          </tr>
           </thead>
 
           <tbody>
@@ -79,6 +88,21 @@ export function OrderList({ orders }: OrderListProps) {
                 <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                   {formatDate(order.deadline)}
                 </td>
+                <td className="px-4 py-3">
+  <div className="flex items-center gap-4">
+    <Link
+      href={`/orders/${order.id}/edit`}
+      className="font-medium text-zinc-900 underline dark:text-zinc-100"
+    >
+      Редактировать
+    </Link>
+
+    <DeleteOrderButton
+      orderId={order.id}
+      action={deleteAction}
+    />
+  </div>
+</td>
               </tr>
             ))}
           </tbody>

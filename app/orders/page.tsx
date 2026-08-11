@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { OrderList } from "@/components/orders/OrderList";
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
 
 type RelatedClient = {
   name: string | null;
@@ -9,6 +11,29 @@ function getClientName(clients: RelatedClient | RelatedClient[] | null) {
   const client = Array.isArray(clients) ? clients[0] : clients;
 
   return client?.name ?? "—";
+}
+
+async function deleteOrderAction(formData: FormData) {
+  "use server";
+
+  const supabase = createClient();
+
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) {
+    throw new Error("Не найден id заказа");
+  }
+
+  const { error } = await supabase
+    .from("orders")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/orders");
 }
 
 export default async function OrdersPage() {
@@ -50,10 +75,29 @@ export default async function OrdersPage() {
 
   return (
     <main>
-      <h1>Заказы</h1>
-      <p>Список заказов из Supabase</p>
+      <div className="mb-6 flex items-center justify-between">
+  <div>
+    <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+      Заказы
+    </h1>
 
-      <OrderList orders={formattedOrders} />
+    <p className="mt-2 text-zinc-500 dark:text-zinc-400">
+      Список заказов из Supabase
+    </p>
+  </div>
+
+  <Link
+    href="/orders/new"
+    className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+  >
+    Новый заказ
+  </Link>
+</div>
+
+<OrderList
+  orders={formattedOrders}
+  deleteAction={deleteOrderAction}
+/>
     </main>
   );
 }

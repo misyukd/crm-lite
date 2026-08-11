@@ -1,7 +1,48 @@
 import { createClient } from "@/lib/supabase/server";
 import { ClientList } from "@/components/clients/ClientList";
 import Link from "next/link";
+import { DeleteClientButton } from "@/components/clients/DeleteClientButton";
+import { revalidatePath } from "next/cache";
+async function deleteClientAction(formData: FormData) {
+  "use server";
 
+  const supabase = createClient();
+
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) {
+    throw new Error("Не найден id клиента");
+  }
+  const { count, error: ordersError } = await supabase
+  .from("orders")
+  .select("*", { count: "exact", head: true })
+  .eq("client_id", id);
+
+if (ordersError) {
+  throw new Error(ordersError.message);
+}
+
+if (count && count > 0) {
+  throw new Error(
+    "Нельзя удалить клиента: у него есть связанные заказы"
+  );
+}
+  const { data, error } = await supabase
+  .from("clients")
+  .delete()
+  .eq("id", id)
+  .select();
+
+console.log("DELETE RESULT:", data);
+console.log("DELETE ERROR:", error);
+
+if (error) {
+  throw new Error(error.message);
+}
+
+revalidatePath("/clients");
+
+}
 export default async function ClientsPage() {
   const supabase = createClient();
 
@@ -46,7 +87,10 @@ export default async function ClientsPage() {
     Новый клиент
   </Link>
 </div>
-      <ClientList clients={formattedClients} />
+<ClientList
+  clients={formattedClients}
+  deleteAction={deleteClientAction}
+/>
     </main>
   );
 }

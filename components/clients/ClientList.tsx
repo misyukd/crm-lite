@@ -1,5 +1,6 @@
 import type { Client } from "@/lib/types";
-
+import Link from "next/link";
+import { DeleteClientButton } from "@/components/clients/DeleteClientButton";
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
   month: "long",
@@ -8,6 +9,7 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
 
 type ClientListProps = {
   clients: Client[];
+  deleteAction: (formData: FormData) => void | Promise<void>;
 };
 
 function formatDate(isoDate: string) {
@@ -18,7 +20,10 @@ function formatOptional(value?: string) {
   return value ?? "—";
 }
 
-export function ClientList({ clients }: ClientListProps) {
+export function ClientList({
+  clients,
+  deleteAction,
+}: ClientListProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="overflow-x-auto">
@@ -39,6 +44,9 @@ export function ClientList({ clients }: ClientListProps) {
               </th>
               <th className="px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">
                 Дата создания
+              </th>
+              <th className="px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">
+                Действия
               </th>
             </tr>
           </thead>
@@ -63,6 +71,21 @@ export function ClientList({ clients }: ClientListProps) {
                 <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                   {formatDate(client.createdAt)}
                 </td>
+                <td className="px-4 py-3">
+  <div className="flex items-center gap-4">
+    <Link
+      href={`/clients/${client.id}/edit`}
+      className="font-medium text-zinc-900 underline dark:text-zinc-100"
+    >
+      Редактировать
+    </Link>
+
+    <DeleteClientButton
+      clientId={client.id}
+      action={deleteAction}
+    />
+  </div>
+</td>
               </tr>
             ))}
           </tbody>
