@@ -1,5 +1,4 @@
 import { StatusBadge } from "@/components/orders/StatusBadge";
-import type { Client, Order } from "@/lib/types";
 
 const currencyFormatter = new Intl.NumberFormat("ru-RU", {
   style: "currency",
@@ -13,20 +12,24 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   year: "numeric",
 });
 
+type OrderListItem = {
+  id: string;
+  title: string;
+  amount: number;
+  status: "new" | "in_progress" | "completed" | "cancelled";
+  deadline: string;
+  clientName: string;
+};
+
 type OrderListProps = {
-  orders: Order[];
-  clients: Client[];
+  orders: OrderListItem[];
 };
 
 function formatDate(isoDate: string) {
   return dateFormatter.format(new Date(isoDate));
 }
 
-function getClientName(clientId: string, clients: Client[]) {
-  return clients.find((client) => client.id === clientId)?.name ?? "—";
-}
-
-export function OrderList({ orders, clients }: OrderListProps) {
+export function OrderList({ orders }: OrderListProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="overflow-x-auto">
@@ -50,6 +53,7 @@ export function OrderList({ orders, clients }: OrderListProps) {
               </th>
             </tr>
           </thead>
+
           <tbody>
             {orders.map((order) => (
               <tr
@@ -59,15 +63,19 @@ export function OrderList({ orders, clients }: OrderListProps) {
                 <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
                   {order.title}
                 </td>
+
                 <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                  {getClientName(order.clientId, clients)}
+                  {order.clientName}
                 </td>
+
                 <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                   {currencyFormatter.format(order.amount)}
                 </td>
+
                 <td className="px-4 py-3">
                   <StatusBadge status={order.status} />
                 </td>
+
                 <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                   {formatDate(order.deadline)}
                 </td>

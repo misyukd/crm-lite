@@ -10,7 +10,7 @@ console.log(
 );
 
   const { data: clients, error } = await supabase
-    .from("clients")
+    .from("clients")       
     .select("*")
     .order("created_at", { ascending: false });
 
