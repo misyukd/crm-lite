@@ -11,37 +11,49 @@ async function deleteClientAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
 
   if (!id) {
-    throw new Error("Не найден id клиента");
+    return {
+      success: false,
+      message: "Не найден id клиента",
+    };
   }
+
   const { count, error: ordersError } = await supabase
-  .from("orders")
-  .select("*", { count: "exact", head: true })
-  .eq("client_id", id);
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("client_id", id);
 
-if (ordersError) {
-  throw new Error(ordersError.message);
-}
+  if (ordersError) {
+    return {
+      success: false,
+      message: ordersError.message,
+    };
+  }
 
-if (count && count > 0) {
-  throw new Error(
-    "Нельзя удалить клиента: у него есть связанные заказы"
-  );
-}
-  const { data, error } = await supabase
-  .from("clients")
-  .delete()
-  .eq("id", id)
-  .select();
+  if (count && count > 0) {
+    return {
+      success: false,
+      message: "Нельзя удалить клиента: у него есть связанные заказы",
+    };
+  }
 
-console.log("DELETE RESULT:", data);
-console.log("DELETE ERROR:", error);
+  const { error } = await supabase
+    .from("clients")
+    .delete()
+    .eq("id", id);
 
-if (error) {
-  throw new Error(error.message);
-}
+  if (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 
-revalidatePath("/clients");
+  revalidatePath("/clients");
 
+  return {
+    success: true,
+    message: "Клиент удалён",
+  };
 }
 export default async function ClientsPage() {
   const supabase = createClient();

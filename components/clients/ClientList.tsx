@@ -9,7 +9,12 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
 
 type ClientListProps = {
   clients: Client[];
-  deleteAction: (formData: FormData) => void | Promise<void>;
+  deleteAction: (
+    formData: FormData
+  ) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
 };
 
 function formatDate(isoDate: string) {
