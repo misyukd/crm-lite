@@ -25,7 +25,12 @@ type OrderListItem = {
 
 type OrderListProps = {
   orders: OrderListItem[];
-  deleteAction: (formData: FormData) => void | Promise<void>;
+  deleteAction: (
+    formData: FormData
+  ) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
 };
 
 function formatDate(isoDate: string) {

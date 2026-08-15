@@ -23,7 +23,7 @@ async function updateOrderAction(formData: FormData) {
     throw new Error("Заполни обязательные поля");
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
   .from("orders")
   .update({
     client_id: clientId,

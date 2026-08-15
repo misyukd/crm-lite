@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ClientList } from "@/components/clients/ClientList";
 import Link from "next/link";
-import { DeleteClientButton } from "@/components/clients/DeleteClientButton";
 import { revalidatePath } from "next/cache";
 async function deleteClientAction(formData: FormData) {
   "use server";

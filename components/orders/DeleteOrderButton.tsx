@@ -4,7 +4,12 @@ import { useState } from "react";
 
 type DeleteOrderButtonProps = {
   orderId: string;
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    formData: FormData
+  ) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
 };
 
 export function DeleteOrderButton({
@@ -12,6 +17,7 @@ export function DeleteOrderButton({
   action,
 }: DeleteOrderButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
   return (
     <>
@@ -32,27 +38,46 @@ export function DeleteOrderButton({
 
             <p className="mt-2 text-sm text-zinc-500">
               Это действие нельзя отменить.
+              {message && (
+  <p className="mt-3 text-sm text-red-600">
+    {message}
+  </p>
+)}
             </p>
 
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setMessage("");
+                  setIsOpen(false);
+                }}
                 className="rounded-lg border px-4 py-2"
               >
                 Отмена
               </button>
+              
 
-              <form action={action}>
-                <input type="hidden" name="id" value={orderId} />
+              <button
+  type="button"
+  onClick={async () => {
+    const formData = new FormData();
+    formData.append("id", orderId);
 
-                <button
-                  type="submit"
-                  className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white"
-                >
-                  Да, удалить
-                </button>
-              </form>
+    const result = await action(formData);
+
+if (!result.success) {
+  setMessage(result.message);
+  return;
+}
+
+setMessage("");
+setIsOpen(false);
+  }}
+  className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white"
+>
+  Да, удалить
+</button>
             </div>
           </div>
         </div>

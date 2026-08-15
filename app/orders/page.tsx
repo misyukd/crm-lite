@@ -21,7 +21,10 @@ async function deleteOrderAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
 
   if (!id) {
-    throw new Error("Не найден id заказа");
+    return {
+      success: false,
+      message: "Не найден id заказа",
+    };
   }
 
   const { error } = await supabase
@@ -30,12 +33,19 @@ async function deleteOrderAction(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 
   revalidatePath("/orders");
-}
 
+  return {
+    success: true,
+    message: "Заказ удалён",
+  };
+}
 export default async function OrdersPage() {
   const supabase = createClient();
 
