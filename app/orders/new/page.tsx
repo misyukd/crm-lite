@@ -4,8 +4,14 @@ import { redirect } from "next/navigation";
 async function createOrderAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
-
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Пользователь не авторизован");
+  }
   const clientId = String(formData.get("clientId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const amount = Number(formData.get("amount"));
@@ -22,6 +28,7 @@ async function createOrderAction(formData: FormData) {
     amount,
     status,
     deadline,
+    user_id: user.id,
   });
 
   if (error) {
@@ -32,8 +39,7 @@ async function createOrderAction(formData: FormData) {
 }
 
 export default async function NewOrderPage() {
-  const supabase = createClient();
-
+  const supabase = await createClient();
   const { data: clients, error } = await supabase
     .from("clients")
     .select("id, name")

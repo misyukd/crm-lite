@@ -16,8 +16,7 @@ function getClientName(clients: RelatedClient | RelatedClient[] | null) {
 async function deleteOrderAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
-
+  const supabase = await createClient();
   const id = String(formData.get("id") ?? "");
 
   if (!id) {
@@ -47,8 +46,7 @@ async function deleteOrderAction(formData: FormData) {
   };
 }
 export default async function OrdersPage() {
-  const supabase = createClient();
-
+  const supabase = await createClient();
   const { data: orders, error } = await supabase
     .from("orders")
     .select(`

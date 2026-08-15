@@ -4,7 +4,14 @@ import { redirect } from "next/navigation";
 async function createClientAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Пользователь не авторизован");
+  }
 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
@@ -20,6 +27,7 @@ async function createClientAction(formData: FormData) {
     email: email || null,
     phone: phone || null,
     company: company || null,
+    user_id: user.id,
   });
 
   if (error) {

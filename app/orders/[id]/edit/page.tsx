@@ -10,8 +10,7 @@ type EditOrderPageProps = {
 async function updateOrderAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
-
+  const supabase = await createClient();
   const id = String(formData.get("id") ?? "");
   const clientId = String(formData.get("clientId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
@@ -47,8 +46,7 @@ export default async function EditOrderPage({
 }: EditOrderPageProps) {
   const { id } = await params;
 
-  const supabase = createClient();
-
+  const supabase = await createClient();
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("*")

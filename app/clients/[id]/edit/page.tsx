@@ -10,7 +10,7 @@ type EditClientPageProps = {
 async function updateClientAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
@@ -43,7 +43,7 @@ export default async function EditClientPage({
   params,
 }: EditClientPageProps) {
   const { id } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: client, error } = await supabase
     .from("clients")

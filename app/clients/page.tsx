@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 async function deleteClientAction(formData: FormData) {
   "use server";
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const id = String(formData.get("id") ?? "");
 
@@ -55,7 +55,7 @@ async function deleteClientAction(formData: FormData) {
   };
 }
 export default async function ClientsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: clients, error } = await supabase
     .from("clients")       
