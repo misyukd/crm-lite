@@ -11,6 +11,7 @@ async function updateOrderAction(formData: FormData) {
   "use server";
 
   const supabase = await createClient();
+
   const id = String(formData.get("id") ?? "");
   const clientId = String(formData.get("clientId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
@@ -18,21 +19,25 @@ async function updateOrderAction(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   const deadline = String(formData.get("deadline") ?? "");
 
-  if (!id || !clientId || !title || !amount || !status || !deadline) {
+  if (!id || !clientId || !title || !status || !deadline) {
     throw new Error("Заполни обязательные поля");
   }
 
+  if (amount <= 0) {
+    throw new Error("Сумма должна быть больше нуля");
+  }
+
   const { error } = await supabase
-  .from("orders")
-  .update({
-    client_id: clientId,
-    title,
-    amount,
-    status,
-    deadline,
-  })
-  .eq("id", id)
-  .select();
+    .from("orders")
+    .update({
+      client_id: clientId,
+      title,
+      amount,
+      status,
+      deadline,
+    })
+    .eq("id", id)
+    .select();
 
   if (error) {
     throw new Error(error.message);
@@ -45,8 +50,8 @@ export default async function EditOrderPage({
   params,
 }: EditOrderPageProps) {
   const { id } = await params;
-
   const supabase = await createClient();
+
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("*")
@@ -102,6 +107,8 @@ export default async function EditOrderPage({
           <input
             name="title"
             required
+            minLength={2}
+            maxLength={100}
             defaultValue={order.title}
             className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
           />
@@ -116,6 +123,8 @@ export default async function EditOrderPage({
             name="amount"
             type="number"
             required
+            min={1}
+            step={1}
             defaultValue={order.amount}
             className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
           />
@@ -152,12 +161,21 @@ export default async function EditOrderPage({
           />
         </div>
 
-        <button
-          type="submit"
-          className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Сохранить изменения
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Сохранить изменения
+          </button>
+
+          <a
+            href="/orders"
+            className="rounded-lg border px-5 py-3 font-medium"
+          >
+            Отмена
+          </a>
+        </div>
       </form>
     </main>
   );

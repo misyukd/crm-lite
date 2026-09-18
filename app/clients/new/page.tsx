@@ -1,14 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { PhoneInput } from "@/components/clients/PhoneInput";
 
 async function createClientAction(formData: FormData) {
   "use server";
 
   const supabase = await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  
+
   if (!user) {
     throw new Error("Пользователь не авторизован");
   }
@@ -53,9 +55,12 @@ export default function NewClientPage() {
           <label className="mb-2 block text-sm font-medium">
             Имя *
           </label>
+
           <input
             name="name"
             required
+            minLength={2}
+            maxLength={100}
             className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 outline-none dark:border-zinc-700 dark:bg-zinc-900"
             placeholder="Анна Петрова"
           />
@@ -65,8 +70,10 @@ export default function NewClientPage() {
           <label className="mb-2 block text-sm font-medium">
             Компания
           </label>
+
           <input
             name="company"
+            maxLength={100}
             className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 outline-none dark:border-zinc-700 dark:bg-zinc-900"
             placeholder="ООО Ромашка"
           />
@@ -76,31 +83,38 @@ export default function NewClientPage() {
           <label className="mb-2 block text-sm font-medium">
             Телефон
           </label>
-          <input
-            name="phone"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 outline-none dark:border-zinc-700 dark:bg-zinc-900"
-            placeholder="+7 999 123-45-67"
-          />
+            <PhoneInput/>
         </div>
 
         <div>
           <label className="mb-2 block text-sm font-medium">
             Email
           </label>
+
           <input
             name="email"
             type="email"
+            maxLength={150}
             className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 outline-none dark:border-zinc-700 dark:bg-zinc-900"
             placeholder="client@example.com"
           />
         </div>
 
-        <button
-          type="submit"
-          className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Создать клиента
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Создать клиента
+          </button>
+
+          <a
+            href="/clients"
+            className="rounded-lg border px-5 py-3 font-medium"
+          >
+            Отмена
+          </a>
+        </div>
       </form>
     </main>
   );

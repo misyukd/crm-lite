@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PhoneInput } from "@/components/clients/PhoneInput";
 import { redirect } from "next/navigation";
 
 type EditClientPageProps = {
@@ -76,6 +77,8 @@ export default async function EditClientPage({
           <input
             name="name"
             required
+            minLength={2}
+            maxLength={100}
             defaultValue={client.name}
             className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
           />
@@ -88,6 +91,7 @@ export default async function EditClientPage({
 
           <input
             name="company"
+            maxLength={100}
             defaultValue={client.company ?? ""}
             className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
           />
@@ -98,11 +102,7 @@ export default async function EditClientPage({
             Телефон
           </label>
 
-          <input
-            name="phone"
-            defaultValue={client.phone ?? ""}
-            className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
-          />
+          <PhoneInput defaultValue={client.phone ?? ""} />
         </div>
 
         <div>
@@ -113,17 +113,27 @@ export default async function EditClientPage({
           <input
             name="email"
             type="email"
+            maxLength={150}
             defaultValue={client.email ?? ""}
             className="w-full rounded-lg border px-4 py-3 dark:bg-zinc-900"
           />
         </div>
 
-        <button
-          type="submit"
-          className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Сохранить изменения
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            className="rounded-lg bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Сохранить изменения
+          </button>
+
+          <a
+            href="/clients"
+            className="rounded-lg border px-5 py-3 font-medium"
+          >
+            Отмена
+          </a>
+        </div>
       </form>
     </main>
   );
