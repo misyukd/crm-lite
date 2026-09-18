@@ -17,7 +17,7 @@ export function PhoneInput({ defaultValue = "" }: PhoneInputProps) {
           ""
         );
       }}
-      className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 outline-none dark:border-zinc-700 dark:bg-zinc-900"
+      className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-500"
       placeholder="+7 999 123-45-67"
     />
   );
