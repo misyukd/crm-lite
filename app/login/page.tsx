@@ -1,10 +1,14 @@
 "use client";
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -28,9 +32,11 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-3xl font-semibold">
-        Вход в CRM
-      </h1>
+      <h1 className="text-3xl font-semibold">Вход в CRM</h1>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        Войдите в свой аккаунт, чтобы продолжить
+      </p>
 
       <div className="mt-8 space-y-4">
         <input
@@ -62,6 +68,16 @@ export default function LoginPage() {
         >
           Войти
         </button>
+
+        <p className="text-center text-sm text-zinc-500">
+          Нет аккаунта?{" "}
+          <Link
+            href="/register"
+            className="font-medium text-zinc-900 underline dark:text-zinc-100"
+          >
+            Зарегистрироваться
+          </Link>
+        </p>
       </div>
     </main>
   );

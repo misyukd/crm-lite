@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
@@ -26,9 +28,11 @@ export default function RegisterPage() {
 
   return (
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-3xl font-semibold">
-        Регистрация
-      </h1>
+      <h1 className="text-3xl font-semibold">Регистрация</h1>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        Создайте аккаунт, чтобы начать работу с CRM
+      </p>
 
       <div className="mt-8 space-y-4">
         <input
@@ -60,6 +64,16 @@ export default function RegisterPage() {
         >
           Зарегистрироваться
         </button>
+
+        <p className="text-center text-sm text-zinc-500">
+          Уже есть аккаунт?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-zinc-900 underline dark:text-zinc-100"
+          >
+            Войти
+          </Link>
+        </p>
       </div>
     </main>
   );
