@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import { LogoutButton } from "@/components/auth/LogoutButton";
 
 const navItems = [
@@ -8,16 +12,24 @@ const navItems = [
 ];
 
 export function AppNav() {
+  const pathname = usePathname();
+
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
+
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="border-b border-zinc-200 px-5 py-6 dark:border-zinc-800">
         <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           CRM Lite
         </p>
+
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           Управление клиентами
         </p>
       </div>
+
       <nav className="flex flex-col gap-1 p-3">
         {navItems.map((item) => (
           <Link
@@ -29,6 +41,7 @@ export function AppNav() {
           </Link>
         ))}
       </nav>
+
       <LogoutButton />
     </aside>
   );
