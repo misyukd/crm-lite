@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { createClient } from "@/lib/supabase/client";
 
 function DashboardIcon() {
   return (
@@ -60,6 +61,22 @@ function OrdersIcon() {
   );
 }
 
+function ProfileIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3" />
+      <path d="M5 20c.8-4 3.2-6 7-6s6.2 2 7 6" />
+    </svg>
+  );
+}
+
 const navItems = [
   {
     href: "/",
@@ -79,54 +96,51 @@ const navItems = [
   {
     href: "/profile",
     label: "Профиль",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="8" r="3" />
-        <path d="M5 20c.8-4 3.2-6 7-6s6.2 2 7 6" />
-      </svg>
-    ),
+    icon: <ProfileIcon />,
   },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
+
   const [email, setEmail] = useState("");
-const [name, setName] = useState("");
+  const [name, setName] = useState("");
 
-useEffect(() => {
-  async function loadUser() {
-    const supabase = createClient();
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) return;
+      if (!user) {
+        return;
+      }
 
-    setEmail(user.email ?? "");
+      setEmail(user.email ?? "");
 
-    setName(
-      user.user_metadata?.full_name ||
-      user.email?.split("@")[0] ||
-      "Пользователь"
-    );
-  }
+      setName(
+        user.user_metadata?.full_name ||
+          user.email?.split("@")[0] ||
+          "Пользователь"
+      );
+    }
 
-  loadUser();
-}, []);
+    loadUser();
+  }, []);
+
   if (pathname === "/login" || pathname === "/register") {
     return null;
   }
 
+  const avatarLetter =
+    name.charAt(0).toUpperCase() ||
+    email.charAt(0).toUpperCase() ||
+    "U";
+
   return (
-    <aside className="flex min-h-screen w-64 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <aside className="hidden min-h-screen w-64 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:flex">
       <div className="border-b border-zinc-200 px-6 py-6 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-sm font-bold text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900">
@@ -162,37 +176,34 @@ useEffect(() => {
                   : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
               }`}
             >
-              <span className="shrink-0">
-                {item.icon}
-              </span>
-
-              <span>
-                {item.label}
-              </span>
+              <span className="shrink-0">{item.icon}</span>
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-  <div className="mb-3 flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
-      {name.charAt(0).toUpperCase()}
-    </div>
+        {email && (
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
+              {avatarLetter}
+            </div>
 
-    <div className="min-w-0">
-      <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-        {name}
-      </p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                {name}
+              </p>
 
-      <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-        {email}
-      </p>
-    </div>
-  </div>
+              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                {email}
+              </p>
+            </div>
+          </div>
+        )}
 
-  <LogoutButton />
-</div>
+        <LogoutButton />
+      </div>
     </aside>
   );
 }
