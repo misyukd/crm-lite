@@ -1,7 +1,11 @@
-import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+type NewOrderPageProps = {
+  searchParams: Promise<{
+    client?: string;
+  }>;
+};
 
 async function createOrderAction(formData: FormData) {
   "use server";
@@ -30,14 +34,16 @@ async function createOrderAction(formData: FormData) {
     throw new Error("Сумма должна быть больше нуля");
   }
 
-  const { error } = await supabase.from("orders").insert({
-    client_id: clientId,
-    title,
-    amount,
-    status,
-    deadline,
-    user_id: user.id,
-  });
+  const { error } = await supabase
+    .from("orders")
+    .insert({
+      client_id: clientId,
+      title,
+      amount,
+      status,
+      deadline,
+      user_id: user.id,
+    });
 
   if (error) {
     throw new Error(error.message);
@@ -46,7 +52,16 @@ async function createOrderAction(formData: FormData) {
   redirect("/orders");
 }
 
-export default async function NewOrderPage() {
+
+export default async function NewOrderPage({
+  searchParams,
+}: NewOrderPageProps) {
+
+  const params = await searchParams;
+
+  const selectedClientId = params.client ?? "";
+
+
   const supabase = await createClient();
 
   const { data: clients, error } = await supabase
@@ -54,147 +69,159 @@ export default async function NewOrderPage() {
     .select("id, name")
     .order("name");
 
+
   if (error) {
     return (
-      <main className="flex-1 bg-zinc-50 p-8 dark:bg-zinc-950">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-950/20">
-            <h1 className="text-xl font-semibold text-red-700 dark:text-red-300">
-              Не удалось загрузить клиентов
-            </h1>
-
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-              {error.message}
-            </p>
-          </div>
-        </div>
+      <main className="p-8">
+        <p className="text-red-600">
+          Ошибка загрузки клиентов: {error.message}
+        </p>
       </main>
     );
   }
 
-  const inputClass =
-    "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-500";
 
   return (
     <main className="flex-1 bg-zinc-50 p-8 dark:bg-zinc-950">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
-          <Link
-            href="/orders"
-            className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            ← Назад к заказам
-          </Link>
 
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+      <div className="mx-auto max-w-2xl">
+
+        <div>
+          <p className="text-sm text-zinc-500">
+            Заказы
+          </p>
+
+          <h1 className="mt-1 text-3xl font-semibold">
             Новый заказ
           </h1>
 
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Создайте новый заказ и привяжите его к клиенту.
+          <p className="mt-2 text-zinc-500">
+            Создайте новый заказ для клиента
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-          <form action={createOrderAction} className="space-y-6">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Клиент <span className="text-red-500">*</span>
-              </label>
 
-              <select
-                name="clientId"
-                required
-                className={inputClass}
-              >
-                <option value="">Выберите клиента</option>
+        <form
+          action={createOrderAction}
+          className="mt-8 space-y-5"
+        >
 
-                {(clients ?? []).map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Клиент
+            </label>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Название заказа <span className="text-red-500">*</span>
-              </label>
+            <select
+              name="clientId"
+              required
+              defaultValue={selectedClientId}
+              className="w-full rounded-xl border px-4 py-3 dark:bg-zinc-900"
+            >
 
-              <input
-                name="title"
-                required
-                minLength={2}
-                maxLength={100}
-                className={inputClass}
-                placeholder="Разработка сайта"
-              />
-            </div>
+              <option value="">
+                Выберите клиента
+              </option>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Сумма <span className="text-red-500">*</span>
-              </label>
+              {(clients ?? []).map((client) => (
+                <option
+                  key={client.id}
+                  value={client.id}
+                >
+                  {client.name}
+                </option>
+              ))}
 
-              <input
-                name="amount"
-                type="number"
-                required
-                min={1}
-                step={1}
-                className={inputClass}
-                placeholder="85000"
-              />
-            </div>
+            </select>
+          </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Статус
-              </label>
 
-              <select
-                name="status"
-                className={inputClass}
-              >
-                <option value="new">Новый</option>
-                <option value="in_progress">В работе</option>
-                <option value="completed">Завершён</option>
-                <option value="cancelled">Отменён</option>
-              </select>
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Название заказа
+            </label>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Дедлайн <span className="text-red-500">*</span>
-              </label>
+            <input
+              name="title"
+              required
+              placeholder="Разработка сайта"
+              className="w-full rounded-xl border px-4 py-3 dark:bg-zinc-900"
+            />
+          </div>
 
-              <input
-                name="deadline"
-                type="date"
-                required
-                className={inputClass}
-              />
-            </div>
 
-            <div className="flex flex-col gap-3 border-t border-zinc-200 pt-6 sm:flex-row dark:border-zinc-800">
-              <button
-                type="submit"
-                className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-              >
-                Создать заказ
-              </button>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Сумма
+            </label>
 
-              <Link
-                href="/orders"
-                className="rounded-xl border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                Отмена
-              </Link>
-            </div>
-          </form>
-        </div>
+            <input
+              name="amount"
+              type="number"
+              min="1"
+              required
+              placeholder="85000"
+              className="w-full rounded-xl border px-4 py-3 dark:bg-zinc-900"
+            />
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Статус
+            </label>
+
+            <select
+              name="status"
+              defaultValue="new"
+              className="w-full rounded-xl border px-4 py-3 dark:bg-zinc-900"
+            >
+
+              <option value="new">
+                Новый
+              </option>
+
+              <option value="in_progress">
+                В работе
+              </option>
+
+              <option value="completed">
+                Завершён
+              </option>
+
+              <option value="cancelled">
+                Отменён
+              </option>
+
+            </select>
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Дедлайн
+            </label>
+
+            <input
+              name="deadline"
+              type="date"
+              required
+              className="w-full rounded-xl border px-4 py-3 dark:bg-zinc-900"
+            />
+          </div>
+
+
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Создать заказ
+          </button>
+
+
+        </form>
+
       </div>
+
     </main>
   );
 }

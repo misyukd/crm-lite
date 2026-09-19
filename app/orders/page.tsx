@@ -91,6 +91,7 @@ export default async function OrdersPage() {
     status: order.status,
     deadline: order.deadline,
     clientName: getClientName(order.clients),
+    clientId: order.client_id,
   }));
 
   return (

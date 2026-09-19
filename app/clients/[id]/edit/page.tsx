@@ -1,175 +1,187 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { PhoneInput } from "@/components/clients/PhoneInput";
+import { StatusBadge } from "@/components/orders/StatusBadge";
 
-type EditClientPageProps = {
+
+type ClientPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
 
-async function updateClientAction(formData: FormData) {
-  "use server";
 
-  const supabase = await createClient();
-
-  const id = String(formData.get("id") ?? "");
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const company = String(formData.get("company") ?? "").trim();
-
-  if (!id || !name) {
-    throw new Error("Не хватает id или имени клиента");
-  }
-
-  const { error } = await supabase
-    .from("clients")
-    .update({
-      name,
-      email: email || null,
-      phone: phone || null,
-      company: company || null,
-    })
-    .eq("id", id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  redirect("/clients");
-}
-
-export default async function EditClientPage({
+export default async function ClientPage({
   params,
-}: EditClientPageProps) {
+}: ClientPageProps) {
+
   const { id } = await params;
+
   const supabase = await createClient();
+
 
   const { data: client, error } = await supabase
     .from("clients")
-    .select("*")
+    .select(`
+      id,
+      name,
+      email,
+      phone,
+      company,
+      created_at,
+      orders (
+        id,
+        title,
+        amount,
+        status,
+        deadline
+      )
+    `)
     .eq("id", id)
     .single();
 
-  if (error || !client) {
-    return (
-      <main className="flex-1 bg-zinc-50 p-8 dark:bg-zinc-950">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              Клиент не найден
-            </h1>
 
-            <Link
-              href="/clients"
-              className="mt-4 inline-block text-sm font-medium text-zinc-600 underline dark:text-zinc-300"
-            >
-              Вернуться к клиентам
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
+  if (error || !client) {
+    notFound();
   }
 
-  const inputClass =
-    "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-500";
 
   return (
     <main className="flex-1 bg-zinc-50 p-8 dark:bg-zinc-950">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
+
+      <div className="mx-auto max-w-5xl">
+
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+            <div>
+              <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {client.name}
+              </h1>
+
+              {client.company && (
+                <p className="mt-2 text-zinc-500 dark:text-zinc-400">
+                  {client.company}
+                </p>
+              )}
+            </div>
+
+
+            <Link
+              href={`/clients/${client.id}/edit`}
+              className="rounded-xl border px-4 py-2 text-sm font-medium"
+            >
+              Редактировать
+            </Link>
+
+          </div>
+
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+
+            <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-950">
+              <p className="text-xs text-zinc-500">
+                Телефон
+              </p>
+
+              <p className="mt-1 font-medium">
+                {client.phone || "—"}
+              </p>
+            </div>
+
+
+            <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-950">
+              <p className="text-xs text-zinc-500">
+                Email
+              </p>
+
+              <p className="mt-1 font-medium">
+                {client.email || "—"}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div className="mt-8 flex items-center justify-between">
+
+          <div>
+            <h2 className="text-2xl font-semibold">
+              Заказы
+            </h2>
+
+            <p className="mt-1 text-sm text-zinc-500">
+              Все заказы этого клиента
+            </p>
+          </div>
+
+
           <Link
-            href="/clients"
-            className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            href={`/orders/new?client=${client.id}`}
+            className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
           >
-            ← Назад к клиентам
+            + Новый заказ
           </Link>
 
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Редактирование клиента
-          </h1>
-
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Измените контактную информацию клиента.
-          </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-          <form action={updateClientAction} className="space-y-6">
-            <input type="hidden" name="id" value={client.id} />
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Имя <span className="text-red-500">*</span>
-              </label>
 
-              <input
-                name="name"
-                required
-                minLength={2}
-                maxLength={100}
-                defaultValue={client.name}
-                className={inputClass}
-              />
+        <div className="mt-4 grid gap-4">
+
+          {client.orders.length === 0 ? (
+
+            <div className="rounded-2xl border bg-white p-6 text-center text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
+              У клиента пока нет заказов
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Компания
-              </label>
+          ) : (
 
-              <input
-                name="company"
-                maxLength={100}
-                defaultValue={client.company ?? ""}
-                className={inputClass}
-              />
-            </div>
+            client.orders.map((order) => (
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Телефон
-              </label>
-
-              <PhoneInput defaultValue={client.phone ?? ""} />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Email
-              </label>
-
-              <input
-                name="email"
-                type="email"
-                maxLength={150}
-                defaultValue={client.email ?? ""}
-                className={inputClass}
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-zinc-200 pt-6 sm:flex-row dark:border-zinc-800">
-              <button
-                type="submit"
-                className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              <div
+                key={order.id}
+                className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
               >
-                Сохранить изменения
-              </button>
 
-              <Link
-                href="/clients"
-                className="rounded-xl border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                Отмена
-              </Link>
-            </div>
-          </form>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                  <div>
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
+                      {order.title}
+                    </h3>
+
+                    <p className="mt-1 text-sm text-zinc-500">
+                      Дедлайн: {order.deadline}
+                    </p>
+                  </div>
+
+
+                  <StatusBadge status={order.status} />
+
+                </div>
+
+
+                <p className="mt-4 text-2xl font-semibold">
+                  {Number(order.amount).toLocaleString("ru-RU")} ₽
+                </p>
+
+              </div>
+
+            ))
+
+          )}
+
         </div>
+
+
       </div>
+
     </main>
   );
 }
