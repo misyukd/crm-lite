@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
   request.nextUrl.pathname === "/" ||
   request.nextUrl.pathname.startsWith("/clients") ||
   request.nextUrl.pathname.startsWith("/orders");
+  request.nextUrl.pathname.startsWith("/profile");
   
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
@@ -49,4 +50,5 @@ export async function updateSession(request: NextRequest) {
   }
   
   return supabaseResponse;
+  
 }

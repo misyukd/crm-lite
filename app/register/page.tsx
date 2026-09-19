@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -15,6 +16,19 @@ export default function RegisterPage() {
   async function handleRegister() {
     setMessage("");
     setIsSuccess(false);
+
+    const trimmedName = name.trim();
+
+    if (trimmedName.length < 2) {
+      setMessage("Введите имя минимум из 2 символов.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setMessage("Пароль должен содержать минимум 6 символов.");
+      return;
+    }
+
     setIsLoading(true);
 
     const supabase = createClient();
@@ -22,6 +36,11 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: trimmedName,
+        },
+      },
     });
 
     if (error) {
@@ -54,6 +73,21 @@ export default function RegisterPage() {
 
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
           <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Имя
+              </label>
+
+              <input
+                type="text"
+                placeholder="Даниил"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={100}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-500"
+              />
+            </div>
+
             <div>
               <label className="mb-2 block text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 Email
